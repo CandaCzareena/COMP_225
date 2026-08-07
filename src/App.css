@@ -1,0 +1,30 @@
+.main-layout {
+  display: flex;
+}
+
+.content-area {
+  margin-left: 240px; /* Gives space for the 240px wide side Navbar */
+  padding: 40px;
+  width: calc(100% - 240px);
+  min-height: 100vh;
+}
+
+.content-area h2 {
+  font-size: 1.8rem;
+  margin-top: 0;
+}
+
+.content-area h1,
+.content-area h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.content-area .header-icon {
+  width: 24px;
+  height: 24px;
+  color: var(--accent-dark);
+  object-fit: contain;
+  flex-shrink: 0;
+}
