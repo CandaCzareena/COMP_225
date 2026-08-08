@@ -1,0 +1,11 @@
+import express from "express";
+import programCtrl from "../controllers/program.controller.js";
+const router = express.Router();
+router.route("/api/programs").post(programCtrl.create);
+router.route("/api/programs").get(programCtrl.list);
+router.route("/api/programs").delete(programCtrl.removeAll);
+router.param("programId", programCtrl.programByID);
+router.route("/api/programs/:programId").get(programCtrl.read);
+router.route("/api/programs/:programId").put(programCtrl.update);
+router.route("/api/programs/:programId").delete(programCtrl.remove);
+export default router;

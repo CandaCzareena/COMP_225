@@ -1,0 +1,326 @@
+/* 
+author: Saul Ramirez Barragan
+course: COMP229 - Web Application Development
+Date: June 02
+Week2 Lab1
+*/
+
+:root {
+  --text: #6b6375;
+  --text-h: #08060d;
+  --bg: #fff;
+  --border: #e5e4e7;
+  --code-bg: #f4f3ec;
+  --accent: #aa3bff;
+  --accent-bg: rgba(170, 59, 255, 0.1);
+  --accent-border: rgba(170, 59, 255, 0.5);
+  --social-bg: rgba(244, 243, 236, 0.5);
+  --shadow:
+    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+  font: 18px/145% var(--sans);
+  letter-spacing: 0.18px;
+  color-scheme: light dark;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @media (max-width: 1024px) {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #9ca3af;
+    --text-h: #f3f4f6;
+    --bg: #16171d;
+    --border: #2e303a;
+    --code-bg: #1f2028;
+    --accent: #c084fc;
+    --accent-bg: rgba(192, 132, 252, 0.15);
+    --accent-border: rgba(192, 132, 252, 0.5);
+    --social-bg: rgba(47, 48, 58, 0.5);
+    --shadow:
+      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+  }
+
+  #social .button-icon {
+    filter: invert(1) brightness(2);
+  }
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  width: 1126px;
+  max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  border-inline: 1px solid var(--border);
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.bold {
+  font-weight: 500;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--heading);
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+h1 {
+  font-size: 56px;
+  letter-spacing: -1.68px;
+  margin: 32px 0;
+  @media (max-width: 1024px) {
+    font-size: 36px;
+    margin: 20px 0;
+  }
+}
+h2 {
+  font-size: 24px;
+  line-height: 118%;
+  letter-spacing: -0.24px;
+  margin: 0 0 8px;
+  @media (max-width: 1024px) {
+    font-size: 20px;
+  }
+}
+p {
+  margin: 0;
+  font-size: 18px;
+}
+div{
+  color: var(--text-h);
+}
+
+/* IDs configuration */
+#home,#about, #education, #contact, #services, #project{
+  margin-top: 30px;
+}
+
+/*welcome and mission class configuration*/
+.welcome, .mission{
+  margin-bottom: 80px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+/*home-buttons class configuration*/
+.home-buttons{
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+/*project ID configuration*/
+#project{
+  padding-left: 10px;
+  padding-right: 10px;
+}
+#project h1{
+  margin-bottom: 60px;
+}
+#project p{
+  text-align: justify;
+  margin-top: 0;
+  margin-bottom: 45px;
+}
+/* project subtitle and text class configuration */
+.project-subtitle{
+  display: flex;
+}
+.project-text{
+  text-align: left;
+  width: 100%;
+  margin-bottom: 0;
+}
+.project-text p{
+  width: 80%;
+}
+/* project date class configuration */
+.project-date{
+  text-align: right;
+  width: 50%;
+}
+.project-img{
+  text-align: justify;
+  width: 70%;
+  margin-bottom: 90px;
+}
+.project-date h2, .project-date h3{
+  width: 100%;
+  text-align: right;
+}
+
+/* education class configuration*/
+#education{
+  padding-left: 10px;
+  padding-right: 10px;
+}
+#education table{
+  width: 100%;
+}
+#education p{
+  text-align: left;
+  margin-top: 0;
+  margin-bottom: 45px;
+}
+
+/*No margin-top class*/
+.mt-0{
+  margin-top: 0;
+}
+
+/* education subtitle and text class configuration */
+.education-subtitle{
+  display: flex;
+}
+.education-text{
+  width: 50%;
+}
+.education-subtitle .education-text h2, .education-subtitle .education-text h3{
+  text-align: left;
+  width: 100%;
+}
+
+/* education-date class configuration */
+.education-date{
+  text-align: right;
+  width: 50%;
+}
+.education-date h2, .education-date h3{
+  width: 100%;
+  text-align: right;
+}
+
+/* education-courses class configuration */
+.education-courses{
+  text-align: left;
+  margin-bottom: 60px;
+}
+
+/* about ID configuration*/
+#about p{
+  margin-top: 20px;
+}
+
+/*logo class configuration*/
+.logo{
+  margin-top: 10px;
+}
+
+/*portrait class configuration*/
+.portrait{
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+/* Service list configuration*/
+.service-list{
+  /* Flex wrap format */
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.service-list div{
+  width: 50%;
+}
+
+/* Panel configuration */
+main {
+  display: flex;
+  width: 100%;
+  margin-bottom: 40px;
+}
+
+.panel-hide{
+  width: 30%;
+}
+
+/* Panel styling */
+.panel {
+  background-color: white;
+  border-radius: 5px;
+  padding: 15px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  width: 40%;
+}
+
+.panel h2 {
+  margin-bottom: 10px;
+  font-size: 1.1em;
+  color: #333;
+}
+
+.panel p {
+  color: #08060d;
+  font-size: 0.95em;
+}
+
+/* Contact form configuration */
+form {
+  background: #fff;
+  padding-bottom: 20px;
+  border-radius: 8px;
+  max-width: 400px;
+  margin: auto;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+label {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+  color: #08060d;
+}
+input, textarea, button {
+  width: 80%;
+  padding: 8px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-top: 15px;
+  width: 150px;
+}
+button:hover {
+  background-color: #218838;
+}
+
+code,
+.counter {
+  font-family: var(--mono);
+  display: inline-flex;
+  border-radius: 4px;
+  color: var(--text-h);
+}
+
+code {
+  font-size: 15px;
+  line-height: 135%;
+  padding: 4px 8px;
+  background: var(--code-bg);
+}

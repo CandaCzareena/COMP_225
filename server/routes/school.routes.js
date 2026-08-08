@@ -1,0 +1,11 @@
+import express from "express";
+import schoolCtrl from "../controllers/school.controller.js";
+const router = express.Router();
+router.route("/api/schools").post(schoolCtrl.create);
+router.route("/api/schools").get(schoolCtrl.list);
+router.route("/api/schools").delete(schoolCtrl.removeAll);
+router.param("schoolId", schoolCtrl.schoolByID);
+router.route("/api/schools/:schoolId").get(schoolCtrl.read);
+router.route("/api/schools/:schoolId").put(schoolCtrl.update);
+router.route("/api/schools/:schoolId").delete(schoolCtrl.remove);
+export default router;

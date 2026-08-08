@@ -1,0 +1,11 @@
+import express from "express";
+import blogCtrl from "../controllers/blog.controller.js";
+const router = express.Router();
+router.route("/api/blogs").post(blogCtrl.create);
+router.route("/api/blogs").get(blogCtrl.list);
+router.route("/api/blogs").delete(blogCtrl.removeAll);
+router.param("blogId", blogCtrl.blogByID);
+router.route("/api/blogs/:blogId").get(blogCtrl.read);
+router.route("/api/blogs/:blogId").put(blogCtrl.update);
+router.route("/api/blogs/:blogId").delete(blogCtrl.remove);
+export default router;
