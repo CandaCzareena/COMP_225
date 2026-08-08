@@ -1,0 +1,111 @@
+.marketplace-page {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.page-header p {
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.market-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  margin-top: 20px;
+}
+
+.market-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.market-item-image {
+  background-color: var(--bg);
+  height: 160px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.icon-badge {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+}
+
+.icon-badge svg {
+  width: 32px;
+  height: 32px;
+}
+
+.market-card-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.market-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.item-category {
+  font-size: 0.75rem;
+  background-color: var(--bg);
+  color: var(--ink-soft);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.item-price {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.market-card-content h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+}
+
+.market-card-content p {
+  margin: 0 0 20px 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.5;
+  flex-grow: 1;
+}
+
+.interest-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: var(--surface);
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.interest-btn:hover {
+  background-color: var(--ink);
+  color: var(--surface);
+}

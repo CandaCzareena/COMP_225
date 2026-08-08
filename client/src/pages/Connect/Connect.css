@@ -1,0 +1,95 @@
+.connect-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.page-header {
+  margin-bottom: 30px;
+}
+
+.page-header p {
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.peers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.peer-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.peer-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.peer-badge[data-type="Study Partner"] {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
+.peer-badge[data-type="Peer Tutor"] {
+  background-color: var(--accent-tint);
+  color: var(--accent-dark);
+}
+
+.peer-card h3 {
+  margin: 12px 0 4px 0;
+  font-size: 1.15rem;
+}
+
+.peer-sub {
+  margin: 0 0 16px 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.skills-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 24px;
+  flex-grow: 1;
+}
+
+.skill-tag {
+  background-color: var(--bg);
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.connect-action-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: var(--surface);
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.connect-action-btn:hover {
+  background-color: var(--ink);
+  color: var(--surface);
+}
