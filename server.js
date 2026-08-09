@@ -11,8 +11,8 @@ mongoose
   .then(() => {
     console.log("Welcome to the CollegeBookTagram Application");
   });
-mongoose.connection.on("error", () => {
-  throw new Error(`unable to connect to database: ${config.mongoUri}`);
+mongoose.connection.on("error", (err) => {
+  console.error("MongoDB connection error:", err.message);
 });
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to the CollegeBookTagram Application" });
