@@ -13,53 +13,97 @@ function Auth({ onLoginSuccess }) {
     password: ''
   });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  // Calls POST /auth/signin, stores the token + user in localStorage,
+  // and tells App.jsx that login succeeded.
+  const doSignin = async (email, password) => {
+    const res = await fetch('/auth/signin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      // res.ok is false for any 4xx/5xx status
+      throw new Error(data.error || 'Login failed');
+    }
+
+    // Save the session so a page refresh doesn't log the user out
+    localStorage.setItem('coltcircle_token', data.token);
+    localStorage.setItem('coltcircle_user', JSON.stringify(data.user));
+
+    onLoginSuccess(data.user);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
     const isCentennialEmail = formData.email.endsWith('@my.centennialcollege.ca');
-    const isValidStudentNumber = /^\d{9}$/.test(formData.studentNumber || ''); // Validates exactly 9 digits
+    const isValidStudentNumber = /^\d{9}$/.test(formData.studentNumber || '');
 
-    // Registration Flow
     if (!isLogin) {
+      // ---------- Registration flow ----------
       if (!isCentennialEmail) {
         setError('Access Denied. Only Centennial student emails (@my.centennialcollege.ca) are allowed.');
         return;
       }
-
       if (!isValidStudentNumber) {
         setError('A valid 9-digit Student Number is mandatory.');
         return;
       }
 
-      // Successful Registration -> Lift state up to App.jsx to unlock the dashboard
-      onLoginSuccess({
-        name: formData.name,
-        email: formData.email,
-        studentNumber: formData.studentNumber,
-        program: formData.program,
-        origin: formData.origin
-      });
+      setLoading(true);
+      try {
+        // Step 1: create the user in the database.
+        // Note: the backend expects "password", not "hashed_password" -
+        // the User model has a virtual "password" field that hashes it automatically.
+        const signupRes = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            password: formData.password,
+            studentNumber: formData.studentNumber,
+            program: formData.program,
+            origin: formData.origin,
+          }),
+        });
+        const signupData = await signupRes.json();
+
+        if (!signupRes.ok) {
+          throw new Error(signupData.error || 'Signup failed');
+        }
+
+        // Step 2: log the new user in right away so they land on the dashboard
+        await doSignin(formData.email, formData.password);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
     } else {
-      // Login Flow
+      // ---------- Login flow ----------
       if (!isCentennialEmail) {
         setError('Please use your valid Centennial student email to login.');
         return;
       }
 
-      // Successful Login Simulation -> Lift state up parsing name from email prefix
-      const simulatedName = formData.email.split('@')[0];
-      onLoginSuccess({
-        name: simulatedName.charAt(0).toUpperCase() + simulatedName.slice(1),
-        email: formData.email,
-        studentNumber: '999999999',
-        program: 'Software Engineering Technician'
-      });
+      setLoading(true);
+      try {
+        await doSignin(formData.email, formData.password);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -94,7 +138,7 @@ function Auth({ onLoginSuccess }) {
                 <input type="text" name="program" placeholder="e.g., Software Engineering" value={formData.program} onChange={handleChange} required />
               </div>
               <div className="form-group">
-                <label>Country of Origin / Ethnicity (Optional)</label>
+                <label>Country of Origin (Optional)</label>
                 <input type="text" name="origin" value={formData.origin} onChange={handleChange} />
               </div>
             </>
@@ -107,11 +151,11 @@ function Auth({ onLoginSuccess }) {
 
           <div className="form-group">
             <label>Password</label>
-            <input type="password" name="password" value={formData.password} onChange={handleChange} required />
+            <input type="password" name="password" value={formData.password} onChange={handleChange} required minLength={6} />
           </div>
 
-          <button type="submit" className="auth-btn">
-            {isLogin ? 'Login' : 'Sign Up'}
+          <button type="submit" className="auth-btn" disabled={loading}>
+            {loading ? 'Please wait...' : (isLogin ? 'Login' : 'Sign Up')}
           </button>
         </form>
 

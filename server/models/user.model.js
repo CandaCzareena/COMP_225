@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import crypto from "crypto";
+
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -12,6 +13,20 @@ const UserSchema = new mongoose.Schema({
     unique: "Email already exists",
     match: [/.+\@.+\..+/, "Please fill a valid email address"],
     required: "Email is required",
+  },
+  // These three fields match what the Auth.jsx signup form collects.
+  // They are optional (no "required") since login doesn't send them.
+  studentNumber: {
+    type: String,
+    trim: true,
+  },
+  program: {
+    type: String,
+    trim: true,
+  },
+  origin: {
+    type: String,
+    trim: true,
   },
   created: {
     type: Date,
@@ -27,16 +42,17 @@ const UserSchema = new mongoose.Schema({
   },
   salt: String,
 });
+
 UserSchema.virtual("password")
   .set(function (password) {
     this._password = password;
     this.salt = this.makeSalt();
     this.hashed_password = this.encryptPassword(password);
-    //this.hashed_password = password;
   })
   .get(function () {
     return this._password;
   });
+
 UserSchema.path("hashed_password").validate(function (v) {
   if (this._password && this._password.length < 6) {
     this.invalidate("password", "Password must be at least 6 characters.");
@@ -67,4 +83,3 @@ UserSchema.methods = {
 };
 
 export default mongoose.model("User", UserSchema);
-
