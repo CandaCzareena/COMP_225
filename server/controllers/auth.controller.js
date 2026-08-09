@@ -17,6 +17,10 @@ const signin = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        studentNumber: user.studentNumber,
+        program: user.program,
+        origin: user.origin,
+        profilePhoto: user.profilePhoto || "",
       },
     });
   } catch (err) {
@@ -35,7 +39,10 @@ const requireSignin = expressjwt({
   userProperty: "auth",
 });
 const hasAuthorization = (req, res, next) => {
-  const authorized = req.profile && req.auth && req.profile._id == req.auth._id;
+  const authorized =
+    req.profile &&
+    req.auth &&
+    String(req.profile._id) === String(req.auth._id);
   if (!authorized) {
     return res.status(403).json({
       error: "User is not authorized",

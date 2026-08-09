@@ -1,171 +1,307 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import ProfilePhoto from '../../components/ProfilePhoto/ProfilePhoto';
 import './Messages.css';
 
-export default function Marketplace({ user, onContactSeller }) {
-  const [items, setItems] = useState([
-    {
-      id: 1,
-      title: "COMP228 Java Programming Textbook",
-      price: 45,
-      category: "Books",
-      description: "Perfect condition, no highlights. Essential for Software Engineering Tech course.",
-      icon: "book-icon",
-      seller: { name: "Czareena Canda", email: "czareenacanda@my.centennialcollege.ca" }
-    },
-    {
-      id: 2,
-      title: "Custom Crocheted Tote Bag",
-      price: 25,
-      category: "Crafts",
-      description: "Handmade 100% cotton yarn tote bag. Support local student creators!",
-      icon: "craft-icon",
-      seller: { name: "Angela Dela Cruz", email: "angela@my.centennialcollege.ca" }
-    }
-  ]);
+function authHeaders() {
+  const token = localStorage.getItem('coltcircle_token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token && { Authorization: `Bearer ${token}` }),
+  };
+}
 
-  const [showForm, setShowForm] = useState(false);
-  const [newItem, setNewItem] = useState({
-    title: '',
-    price: '',
-    category: 'Books',
-    description: ''
-  });
+function Messages({ user, chatRecipient }) {
+  const [conversations, setConversations] = useState([]);
+  const [activeChat, setActiveChat] = useState(null);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [sending, setSending] = useState(false);
+  const messagesEndRef = useRef(null);
+  const activeChatIdRef = useRef(null);
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/items')
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setItems(data);
-        }
-      })
-      .catch((err) => console.log('Using local marketplace data:', err));
-  }, []);
+    activeChatIdRef.current = activeChat?.id ? String(activeChat.id) : null;
+  }, [activeChat]);
 
-  const handleCreateListing = async (e) => {
-    e.preventDefault();
-    if (!newItem.title || !newItem.price) return;
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
-    const itemToPost = {
-      id: Date.now(),
-      ...newItem,
-      price: Number(newItem.price),
-      icon: newItem.category === 'Books' ? 'book-icon' : newItem.category === 'Electronics' ? 'electronics-icon' : 'craft-icon',
-      seller: {
-        name: user?.name || 'Centennial Student',
-        email: user?.email || 'student@my.centennialcollege.ca'
+  const loadConversations = async () => {
+    try {
+      const res = await fetch('/api/messages', { headers: authHeaders() });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load conversations');
+      setConversations(Array.isArray(data) ? data : []);
+      return Array.isArray(data) ? data : [];
+    } catch (err) {
+      setError(err.message);
+      return [];
+    }
+  };
+
+  const loadThread = async (partnerId, { silent = false } = {}) => {
+    if (!partnerId) return;
+    try {
+      if (!silent) setLoading(true);
+      const res = await fetch(`/api/messages/${partnerId}`, {
+        headers: authHeaders(),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load messages');
+
+      // Ignore stale responses if user switched chats
+      if (
+        activeChatIdRef.current &&
+        String(partnerId) !== activeChatIdRef.current &&
+        silent
+      ) {
+        return;
+      }
+
+      setChatMessages(data.messages || []);
+      setActiveChat((prev) => ({
+        id: data.partner.id,
+        name: data.partner.name,
+        email: data.partner.email,
+        profilePhoto: data.partner.profilePhoto || '',
+        lastMessage: prev?.lastMessage || data.messages?.at(-1)?.text || 'Start a conversation...',
+        time: prev?.time || data.messages?.at(-1)?.time || '',
+      }));
+      setError('');
+    } catch (err) {
+      if (!silent) setError(err.message);
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  };
+
+  // Initial load + open chatRecipient if provided
+  useEffect(() => {
+    let cancelled = false;
+
+    const resolvePartnerId = async (recipient) => {
+      if (!recipient) return null;
+      if (recipient._id || recipient.id) return String(recipient._id || recipient.id);
+      if (!recipient.email) return null;
+
+      // Marketplace sellers may only have email — map to a real user id
+      const res = await fetch('/api/users', { headers: authHeaders() });
+      const users = await res.json();
+      const match = (Array.isArray(users) ? users : []).find(
+        (u) => u.email === recipient.email
+      );
+      return match?._id ? String(match._id) : null;
+    };
+
+    const init = async () => {
+      setLoading(true);
+      const list = await loadConversations();
+      if (cancelled) return;
+
+      const partnerId = await resolvePartnerId(chatRecipient);
+      if (cancelled) return;
+
+      if (partnerId) {
+        const existing = list.find((c) => String(c.id) === partnerId);
+        setActiveChat(
+          existing || {
+            id: partnerId,
+            name: chatRecipient.name || chatRecipient.username || 'Student',
+            email: chatRecipient.email || '',
+            lastMessage: 'Start a conversation...',
+            time: 'Just now',
+          }
+        );
+        await loadThread(partnerId);
+      } else if (chatRecipient) {
+        setError(
+          'That person is not a registered user yet, so messages cannot be delivered.'
+        );
+        setActiveChat(null);
+        setChatMessages([]);
+        setLoading(false);
+      } else if (list.length > 0) {
+        setActiveChat(list[0]);
+        await loadThread(list[0].id);
+      } else {
+        setActiveChat(null);
+        setChatMessages([]);
+        setLoading(false);
       }
     };
+
+    init();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatRecipient]);
+
+  // Poll active thread + conversation list so user2 sees new messages
+  useEffect(() => {
+    if (!activeChat?.id) return undefined;
+
+    const interval = setInterval(async () => {
+      await loadThread(activeChat.id, { silent: true });
+      await loadConversations();
+    }, 3000);
+
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeChat?.id]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatMessages]);
+
+  const handleSelectChat = async (convo) => {
+    setActiveChat(convo);
+    await loadThread(convo.id);
+  };
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!newMessage.trim() || !activeChat?.id || sending) return;
+
+    const text = newMessage.trim();
+    setSending(true);
+    setError('');
 
     try {
-      const response = await fetch('http://localhost:3000/api/items', {
+      const res = await fetch('/api/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(itemToPost)
+        headers: authHeaders(),
+        body: JSON.stringify({
+          recipientId: activeChat.id,
+          text,
+        }),
       });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to send message');
 
-      if (response.ok) {
-        const savedItem = await response.json();
-        setItems((prev) => [savedItem, ...prev]);
-      } else {
-        setItems((prev) => [itemToPost, ...prev]);
-      }
-    } catch {
-      setItems((prev) => [itemToPost, ...prev]);
+      setChatMessages((prev) => [...prev, data]);
+      setConversations((prev) => {
+        const others = prev.filter((c) => String(c.id) !== String(activeChat.id));
+        return [
+          {
+            ...activeChat,
+            lastMessage: text,
+            time: data.time || 'Just now',
+          },
+          ...others,
+        ];
+      });
+      setNewMessage('');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSending(false);
     }
-
-    setNewItem({ title: '', price: '', category: 'Books', description: '' });
-    setShowForm(false);
   };
 
-  const handleContact = (item) => {
-    const sellerInfo = item.seller || {
-      name: item.sellerName || 'Student Seller',
-      email: item.sellerEmail || '',
-      _id: item.sellerId || item.id
-    };
-    if (onContactSeller) onContactSeller(sellerInfo);
-  };
+  const myId = user?._id || user?.id;
 
   return (
-    <div className="marketplace-page">
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h2>Centennial Student Marketplace</h2>
-          <p>Buy, sell, or trade textbooks, course supplies, and handmade items.</p>
+    <div className="messages-page">
+      <div className="conversations-sidebar">
+        <h3>Chats</h3>
+        <div className="conversation-list">
+          {conversations.length === 0 ? (
+            <p style={{ padding: '1rem', color: '#888', fontSize: '0.9rem' }}>
+              No conversations yet. Open Users and click Message.
+            </p>
+          ) : (
+            conversations.map((convo) => (
+              <div
+                key={convo.id}
+                className={`convo-item ${String(activeChat?.id) === String(convo.id) ? 'active' : ''}`}
+                onClick={() => handleSelectChat(convo)}
+              >
+              <div className="convo-avatar" style={{ background: 'transparent', border: 'none', padding: 0 }}>
+                <ProfilePhoto src={convo.profilePhoto} name={convo.name} size={44} />
+              </div>
+                <div className="convo-details">
+                  <div className="convo-header">
+                    <h4>{convo.name}</h4>
+                    <span className="convo-time">{convo.time}</span>
+                  </div>
+                  <p className="convo-preview">{convo.lastMessage}</p>
+                </div>
+              </div>
+            ))
+          )}
         </div>
-        <button 
-          onClick={() => setShowForm(!showForm)}
-          style={{ padding: '10px 18px', backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
-        >
-          {showForm ? 'Cancel' : '+ Sell Item'}
-        </button>
       </div>
 
-      {showForm && (
-        <form onSubmit={handleCreateListing} style={{ background: '#f8f9fa', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem', border: '1px solid #ddd' }}>
-          <h3>List an Item for Sale</h3>
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-            <input
-              type="text"
-              placeholder="Item Title (e.g. COMP228 Textbook)"
-              value={newItem.title}
-              onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
-              required
-              style={{ flex: 2, padding: '8px' }}
-            />
-            <input
-              type="number"
-              placeholder="Price ($)"
-              value={newItem.price}
-              onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
-              required
-              style={{ flex: 1, padding: '8px' }}
-            />
-            <select
-              value={newItem.category}
-              onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
-              style={{ flex: 1, padding: '8px' }}
-            >
-              <option value="Books">Books</option>
-              <option value="Electronics">Electronics</option>
-              <option value="Crafts">Crafts</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <textarea
-            placeholder="Item Description..."
-            value={newItem.description}
-            onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
-            rows="3"
-            style={{ width: '100%', padding: '8px', marginBottom: '10px', boxSizing: 'border-box' }}
+      <div className="chat-window">
+        <div className="chat-header">
+          <h3>{activeChat?.name || 'Select a conversation'}</h3>
+        </div>
+
+        {error && (
+          <p style={{ color: '#c0392b', padding: '0.75rem 1rem', margin: 0 }}>
+            {error}
+          </p>
+        )}
+
+        <div className="chat-messages-area">
+          {loading ? (
+            <p style={{ color: '#888' }}>Loading messages...</p>
+          ) : !activeChat ? (
+            <p style={{ color: '#888' }}>
+              Pick someone from Users → Message to start chatting.
+            </p>
+          ) : chatMessages.length === 0 ? (
+            <p style={{ color: '#888' }}>No messages yet. Say hello!</p>
+          ) : (
+            chatMessages.map((msg) => {
+              const isMe = String(msg.senderId) === String(myId);
+              return (
+                <div
+                  key={msg.id}
+                  className={`message-bubble-wrapper ${isMe ? 'outgoing' : 'incoming'}`}
+                >
+                  {!isMe && (
+                    <span className="message-sender-name">{msg.sender}</span>
+                  )}
+                  <div className="message-bubble">
+                    <p>{msg.text}</p>
+                    <span className="message-time">{msg.time}</span>
+                  </div>
+                </div>
+              );
+            })
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        <form onSubmit={handleSendMessage} className="chat-input-bar">
+          <input
+            type="text"
+            placeholder={
+              activeChat
+                ? `Message ${activeChat.name}...`
+                : 'Select a conversation first'
+            }
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            disabled={!activeChat || sending}
+            required
           />
-          <button type="submit" style={{ padding: '8px 16px', backgroundColor: '#007bff', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-            Post Listing
+          <button
+            type="submit"
+            className="chat-send-btn"
+            disabled={!activeChat || sending}
+          >
+            {sending ? 'Sending...' : 'Send'}
           </button>
         </form>
-      )}
-
-      <div className="market-grid">
-        {items.map((item) => (
-          <div key={item._id || item.id} className="market-card">
-            <div className="market-card-content">
-              <div className="market-card-header">
-                <span className="item-category">{item.category}</span>
-                <span className="item-price">${item.price}</span>
-              </div>
-              <h3>{item.title}</h3>
-              <p>{item.description}</p>
-              <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '5px' }}>
-                Seller: <strong>{item.seller?.name || 'Student'}</strong>
-              </p>
-              <button className="interest-btn" onClick={() => handleContact(item)}>
-                Contact Seller
-              </button>
-            </div>
-          </div>
-        ))}
       </div>
     </div>
   );
 }
+
+export default Messages;

@@ -7,8 +7,8 @@ function Navbar({ activePage, setActivePage, onLogout }) {
     { id: 'connect', label: 'Connect', icon: 'connect-icon' },
     { id: 'marketplace', label: 'Marketplace', icon: 'marketplace-icon' },
     { id: 'messages', label: 'Messages', icon: 'messages-icon' },
-    { id: 'profile', label: 'Profile', icon: 'profile-icon' },
-    { id: 'users', label: 'Users', icon: 'profile-icon' } // 👈 Added Users item here
+    { id: 'profile', label: 'My Profile', icon: 'profile-icon' },
+    { id: 'users', label: 'Users', icon: 'profile-icon' },
   ];
 
   return (

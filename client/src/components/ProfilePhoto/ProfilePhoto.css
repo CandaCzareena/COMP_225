@@ -1,0 +1,18 @@
+.profile-photo {
+  display: inline-block;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border, #ddd);
+  background: var(--bg, #f3f3f3);
+  flex-shrink: 0;
+}
+
+.profile-photo-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #fff;
+  background: #243b6b;
+  border-color: #243b6b;
+}

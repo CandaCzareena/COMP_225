@@ -8,17 +8,17 @@ function Home({ user }) {
   const [newPost, setNewPost] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [editingId, setEditingId] = useState(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
 
-  // Pulls the real list of posts from the backend.
-  // We call this both on page load AND after creating/deleting a post,
-  // since the create endpoint doesn't send back the new post - just a message.
   const fetchPosts = async () => {
     try {
       const res = await fetch('/api/blogs');
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Could not load posts');
-      // Show newest posts first
       setPosts(data.reverse());
+      setError('');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -26,8 +26,6 @@ function Home({ user }) {
     }
   };
 
-  // useEffect with an empty [] dependency array runs ONCE,
-  // right when the component first mounts (loads on screen).
   useEffect(() => {
     fetchPosts();
   }, []);
@@ -51,7 +49,42 @@ function Home({ user }) {
 
       setNewTitle('');
       setNewPost('');
-      fetchPosts(); // refresh the list so the new post shows up
+      fetchPosts();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const startEdit = (post) => {
+    setEditingId(post._id);
+    setEditTitle(post.title || '');
+    setEditContent(post.content || '');
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditTitle('');
+    setEditContent('');
+  };
+
+  const handleUpdate = async (e, postId) => {
+    e.preventDefault();
+    if (!editTitle.trim() || !editContent.trim()) return;
+
+    try {
+      const res = await fetch(`/api/blogs/${postId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: editTitle,
+          content: editContent,
+          username: user?.name || 'Centennial Student',
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not update post');
+      cancelEdit();
+      fetchPosts();
     } catch (err) {
       setError(err.message);
     }
@@ -75,12 +108,11 @@ function Home({ user }) {
           Welcome back, {user?.name || 'Colt'}!
           <img className="header-icon" src={logo} alt="" />
         </h1>
-        <p>Catch up with what's happening across Centennial College campuses today.</p>
+        <p>Catch up with what&apos;s happening across Centennial College campuses today.</p>
       </div>
 
       {error && <div className="auth-error">{error}</div>}
 
-      {/* Create Post Card */}
       <div className="create-post-card">
         <form onSubmit={handlePostSubmit}>
           <input
@@ -98,15 +130,18 @@ function Home({ user }) {
             required
           />
           <div className="form-actions">
-            <button type="submit" className="post-submit-btn">Share to Circle</button>
+            <button type="submit" className="post-submit-btn">
+              Share to Circle
+            </button>
           </div>
         </form>
       </div>
 
-      {/* Feed Area */}
       <div className="feed-container">
         {loading && <p>Loading posts...</p>}
-        {!loading && posts.length === 0 && <p>No posts yet - be the first to share something!</p>}
+        {!loading && posts.length === 0 && (
+          <p>No posts yet - be the first to share something!</p>
+        )}
 
         {posts.map((post) => (
           <div key={post._id} className="post-card">
@@ -116,20 +151,54 @@ function Home({ user }) {
                 <span className="author-program">{post.title}</span>
               </div>
               <span className="post-time">
-                {new Date(post.posted || post.created).toLocaleString()}
+                {new Date(post.posted || post.created || Date.now()).toLocaleString()}
               </span>
             </div>
-            <div className="post-body">
-              <p>{post.content}</p>
-            </div>
-            <div className="post-footer">
-              {/* Only the post's own author can delete it */}
-              {user?.name === post.username && (
-                <button className="like-btn" onClick={() => handleDelete(post._id)}>
-                  Delete
-                </button>
-              )}
-            </div>
+
+            {editingId === post._id ? (
+              <form onSubmit={(e) => handleUpdate(e, post._id)} className="post-body">
+                <input
+                  type="text"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  required
+                  style={{ width: '100%', marginBottom: '8px', padding: '8px' }}
+                />
+                <textarea
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  required
+                  rows={3}
+                  style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+                />
+                <div className="post-footer" style={{ gap: '8px' }}>
+                  <button type="submit" className="like-btn">
+                    Save
+                  </button>
+                  <button type="button" className="like-btn" onClick={cancelEdit}>
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <>
+                <div className="post-body">
+                  <p>{post.content}</p>
+                </div>
+                <div className="post-footer" style={{ gap: '8px' }}>
+                  {user?.name === post.username && (
+                    <>
+                      <button className="like-btn" onClick={() => startEdit(post)}>
+                        Edit
+                      </button>
+                      <button className="like-btn" onClick={() => handleDelete(post._id)}>
+                        Delete
+                      </button>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         ))}
       </div>

@@ -28,6 +28,16 @@ const UserSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  profilePhoto: {
+    type: String,
+    default: "",
+  },
+  connections: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: "User",
+    },
+  ],
   created: {
     type: Date,
     default: Date.now,

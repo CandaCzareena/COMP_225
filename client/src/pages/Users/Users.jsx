@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ProfilePhoto from '../../components/ProfilePhoto/ProfilePhoto';
 
 export default function Users({ user, onConnectUser, onStartChat }) {
   const [users, setUsers] = useState([]);
@@ -9,7 +10,7 @@ export default function Users({ user, onConnectUser, onStartChat }) {
   useEffect(() => {
     const token = localStorage.getItem('coltcircle_token');
 
-    fetch('http://localhost:3000/api/users', {
+    fetch('/api/users', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -33,7 +34,7 @@ export default function Users({ user, onConnectUser, onStartChat }) {
     const targetUserId = targetUser._id || targetUser.id;
     try {
       const token = localStorage.getItem('coltcircle_token');
-      await fetch(`http://localhost:3000/api/users/${user?._id || user?.id}/connect`, {
+      await fetch(`/api/users/${user?._id || user?.id}/connect`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -97,11 +98,15 @@ export default function Users({ user, onConnectUser, onStartChat }) {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
+                    gap: '12px',
                   }}
                 >
-                  <div>
-                    <strong>{u.name || u.username}</strong>
-                    <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>{u.email}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <ProfilePhoto src={u.profilePhoto} name={u.name} size={44} />
+                    <div>
+                      <strong>{u.name || u.username}</strong>
+                      <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>{u.email}</p>
+                    </div>
                   </div>
 
                   {!isSelf && (

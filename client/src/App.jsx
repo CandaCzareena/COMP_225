@@ -17,7 +17,6 @@ function App() {
 
   const [activePage, setActivePage] = useState('home');
   const [chatRecipient, setChatRecipient] = useState(null);
-  const [connectedUsers, setConnectedUsers] = useState([]); // 👈 Holds connected peers
 
   const handleLogout = () => {
     localStorage.removeItem('coltcircle_token');
@@ -31,12 +30,9 @@ function App() {
     setActivePage('messages');
   };
 
-  // Triggered when clicking + Connect in Users Directory
-  const handleConnectUser = (targetUser) => {
-    if (!connectedUsers.some((u) => u._id === targetUser._id)) {
-      setConnectedUsers((prev) => [...prev, targetUser]);
-    }
-    setActivePage('connect'); // 👈 Automatically redirects to Connect page
+  // After connecting in Users, open Connect so the saved peer shows from Mongo
+  const handleConnectUser = () => {
+    setActivePage('connect');
   };
 
   const renderPage = () => {
@@ -44,13 +40,25 @@ function App() {
       case 'home':
         return <Home user={user} />;
       case 'connect':
-        return <Connect connectedUsers={connectedUsers} onStartChat={handleStartChat} />;
+        return (
+          <Connect
+            user={user}
+            onStartChat={handleStartChat}
+            onBrowseUsers={() => setActivePage('users')}
+          />
+        );
       case 'marketplace':
         return <Marketplace user={user} onContactSeller={handleStartChat} />;
       case 'messages':
         return <Messages user={user} chatRecipient={chatRecipient} />;
       case 'profile':
-        return <Profile user={user} />;
+        return (
+          <Profile
+            user={user}
+            onUserUpdate={setUser}
+            onNavigateMarketplace={() => setActivePage('marketplace')}
+          />
+        );
       case 'users':
         return <Users user={user} onConnectUser={handleConnectUser} onStartChat={handleStartChat} />;
       default:

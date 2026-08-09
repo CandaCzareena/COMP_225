@@ -10,9 +10,10 @@ const config = {
   env: process.env.NODE_ENV || "development",
   port: process.env.PORT || 3000,
   jwtSecret: process.env.JWT_SECRET || "YOUR_secret_key",
-  // No hardcoded credentials here anymore - MONGODB_URI must come from .env
+  // Accept both names: .env commonly uses MONGO_URI; some setups use MONGODB_URI
   mongoUri:
     process.env.MONGODB_URI ||
+    process.env.MONGO_URI ||
     "mongodb://" +
       (process.env.IP || "localhost") +
       ":" +
