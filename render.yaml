@@ -3,11 +3,14 @@ services:
     name: coltcircle
     runtime: node
     plan: free
-    buildCommand: npm install && npm run build
+    # --include=dev so Vite is installed even when NODE_ENV=production
+    buildCommand: npm install --include=dev && npm install --prefix ./client --include=dev && npm run build --prefix ./client
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NPM_CONFIG_PRODUCTION
+        value: "false"
       - key: MONGO_URI
         sync: false
       - key: JWT_SECRET

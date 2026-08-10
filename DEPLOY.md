@@ -19,14 +19,17 @@ Repo: `https://github.com/CandaCzareena/COMP_225`
 3. Connect `CandaCzareena/COMP_225`
 4. Settings:
    - **Runtime:** Node
-   - **Build Command:** `npm install && npm run build`
+   - **Do not use Yarn** — delete any Build Command that starts with `yarn` (exit 127)
+   - **Build Command:** `npm install --include=dev && npm install --prefix ./client --include=dev && npm run build --prefix ./client`
    - **Start Command:** `npm start`
    - **Instance type:** Free
-5. **Environment** variables:
+   - If the service was auto-created with Yarn, open **Settings → Build & Deploy**, paste the npm commands above, then **Clear build cache & deploy**
+5. **Environment** variables (click **Save Changes** after adding):
 
 | Key | Value |
 |---|---|
 | `NODE_ENV` | `production` |
+| `NPM_CONFIG_PRODUCTION` | `false` |
 | `MONGO_URI` | your Atlas connection string |
 | `JWT_SECRET` | any long random string |
 | `PORT` | `10000` (Render often sets this automatically) |
