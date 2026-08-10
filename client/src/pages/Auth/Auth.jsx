@@ -79,7 +79,9 @@ function Auth({ onLoginSuccess }) {
         const signupData = await signupRes.json();
 
         if (!signupRes.ok) {
-          throw new Error(signupData.error || 'Signup failed');
+          throw new Error(
+            signupData.error || signupData.message || `Signup failed (${signupRes.status})`
+          );
         }
 
         // Step 2: log the new user in right away so they land on the dashboard

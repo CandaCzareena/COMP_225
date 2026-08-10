@@ -3,11 +3,21 @@ import app from "./server/express.js";
 import mongoose from "mongoose";
 
 mongoose.Promise = global.Promise;
+const mongoOptions = {
+  serverSelectionTimeoutMS: 15000,
+};
+
+// On Windows local, prefer IPv4. On Render/cloud, let Node pick (family:4 can break DNS there).
+if (process.env.NODE_ENV !== "production" && process.env.RENDER !== "true") {
+  mongoOptions.family = 4;
+}
+
+if (!config.mongoUri) {
+  console.error("MONGO_URI is missing. Set it in Render Environment variables.");
+}
+
 mongoose
-  .connect(config.mongoUri, {
-    serverSelectionTimeoutMS: 10000,
-    family: 4,
-  })
+  .connect(config.mongoUri, mongoOptions)
   .then(() => {
     console.log("MongoDB Connected:", mongoose.connection.name);
   })

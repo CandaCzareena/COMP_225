@@ -8,8 +8,9 @@ const create = async (req, res) => {
       message: "Successfully signed up!",
     });
   } catch (err) {
+    console.error("Signup error:", err);
     return res.status(400).json({
-      error: errorHandler.getErrorMessage(err),
+      error: errorHandler.getErrorMessage(err) || err.message || "Signup failed",
     });
   }
 };

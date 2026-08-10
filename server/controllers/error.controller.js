@@ -16,7 +16,7 @@ function getErrorMessage(err) {
       default:
         message = "Something went wrong";
     }
-  } else {
+  } else if (err.errors) {
     // Case 2: schema validation error (required field, minlength, etc.)
     for (let errName in err.errors) {
       if (err.errors[errName].message) {
@@ -25,7 +25,11 @@ function getErrorMessage(err) {
     }
   }
 
-  // IMPORTANT: must return the message, otherwise the caller gets undefined
+  // Case 3: generic Error / Mongo network errors
+  if (!message) {
+    message = err.message || "Something went wrong";
+  }
+
   return message;
 }
 
