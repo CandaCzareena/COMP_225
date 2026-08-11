@@ -1,4 +1,5 @@
 <h1>Environment Credentials</h1>
+<h3>Create your own .env file and use these credentials</h3>
 PORT=3000
 NODE_ENV=production
 MONGO_URI=mongodb+srv://rtan36_db_user:iqEBchsYj7J2a023@cluster0.blt8lxj.mongodb.net/coltcircle?appName=Cluster0
