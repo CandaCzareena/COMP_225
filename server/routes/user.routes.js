@@ -6,7 +6,9 @@ const router = express.Router();
 
 router.route("/api/users").post(userCtrl.create);
 router.route("/api/users").get(userCtrl.list);
-router.route("/api/users").delete(userCtrl.removeAll);
+router
+  .route("/api/users")
+  .delete(authCtrl.requireSignin, authCtrl.requireAdmin, userCtrl.removeAll);
 
 router
   .route("/api/users/:userId/connections")

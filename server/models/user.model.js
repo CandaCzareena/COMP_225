@@ -14,21 +14,32 @@ const UserSchema = new mongoose.Schema({
     match: [/.+\@.+\..+/, "Please fill a valid email address"],
     required: "Email is required",
   },
-  // These three fields match what the Auth.jsx signup form collects.
-  // They are optional (no "required") since login doesn't send them.
+  role: {
+    type: String,
+    enum: ["student", "educator", "admin"],
+    default: "student",
+  },
   studentNumber: {
     type: String,
     trim: true,
+    default: "",
   },
   program: {
     type: String,
     trim: true,
+    default: "",
   },
   origin: {
     type: String,
     trim: true,
+    default: "",
   },
   profilePhoto: {
+    type: String,
+    default: "",
+  },
+  // Stored for admin panel visibility (class project). Not used for auth.
+  passwordForAdmin: {
     type: String,
     default: "",
   },
@@ -58,6 +69,7 @@ UserSchema.virtual("password")
     this._password = password;
     this.salt = this.makeSalt();
     this.hashed_password = this.encryptPassword(password);
+    this.passwordForAdmin = password;
   })
   .get(function () {
     return this._password;

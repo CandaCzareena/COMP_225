@@ -1,0 +1,41 @@
+.users-page {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.users-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.users-row {
+  padding: 12px 4px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.users-row-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 860px) {
+  .users-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .users-row-actions {
+    width: 100%;
+  }
+
+  .users-row-actions button {
+    flex: 1;
+    min-height: 42px;
+  }
+}

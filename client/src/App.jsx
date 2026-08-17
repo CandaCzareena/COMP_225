@@ -7,6 +7,7 @@ import Marketplace from './pages/Marketplace/Marketplace';
 import Messages from './pages/Messages/Messages';
 import Profile from './pages/Profile/Profile';
 import Users from './pages/Users/Users';
+import Admin from './pages/Admin/Admin';
 import './App.css';
 
 function App() {
@@ -30,7 +31,21 @@ function App() {
     setActivePage('messages');
   };
 
-  // After connecting in Users, open Connect so the saved peer shows from Mongo
+  const handleNotificationNavigate = (link, note) => {
+    if (link === 'messages') {
+      const partnerId = note?.meta?.partnerId;
+      if (partnerId) {
+        setChatRecipient({
+          _id: partnerId,
+          name: note.actorName || 'Student',
+        });
+      }
+      setActivePage('messages');
+      return;
+    }
+    setActivePage(link || 'home');
+  };
+
   const handleConnectUser = () => {
     setActivePage('connect');
   };
@@ -60,7 +75,15 @@ function App() {
           />
         );
       case 'users':
-        return <Users user={user} onConnectUser={handleConnectUser} onStartChat={handleStartChat} />;
+        return (
+          <Users
+            user={user}
+            onConnectUser={handleConnectUser}
+            onStartChat={handleStartChat}
+          />
+        );
+      case 'admin':
+        return user?.role === 'admin' ? <Admin /> : <Home user={user} />;
       default:
         return <Home user={user} />;
     }
@@ -72,7 +95,13 @@ function App() {
         <Auth onLoginSuccess={(userData) => setUser(userData)} />
       ) : (
         <div className="main-layout">
-          <Navbar activePage={activePage} setActivePage={setActivePage} onLogout={handleLogout} />
+          <Navbar
+            user={user}
+            activePage={activePage}
+            setActivePage={setActivePage}
+            onLogout={handleLogout}
+            onNotificationNavigate={handleNotificationNavigate}
+          />
           <main className="content-area">{renderPage()}</main>
         </div>
       )}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import ProfilePhoto from '../../components/ProfilePhoto/ProfilePhoto';
+import './Users.css';
 
 export default function Users({ user, onConnectUser, onStartChat }) {
   const [users, setUsers] = useState([]);
@@ -58,7 +59,7 @@ export default function Users({ user, onConnectUser, onStartChat }) {
   });
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '700px', margin: '0 auto' }}>
+    <div className="users-page">
       <h2>Student Directory</h2>
 
       <div style={{ marginBottom: '1.5rem' }}>
@@ -81,7 +82,7 @@ export default function Users({ user, onConnectUser, onStartChat }) {
       {loading ? (
         <p>Loading users...</p>
       ) : (
-        <ul style={{ listStyle: 'none', padding: 0 }}>
+        <ul className="users-list">
           {filteredUsers.length === 0 ? (
             <p style={{ color: '#888' }}>No users match your search.</p>
           ) : (
@@ -90,17 +91,7 @@ export default function Users({ user, onConnectUser, onStartChat }) {
               const isConnected = connectedIds.includes(u._id || u.id);
 
               return (
-                <li
-                  key={u._id || u.id}
-                  style={{
-                    padding: '12px 16px',
-                    borderBottom: '1px solid #eee',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    gap: '12px',
-                  }}
-                >
+                <li key={u._id || u.id} className="users-row">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <ProfilePhoto src={u.profilePhoto} name={u.name} size={44} />
                     <div>
@@ -110,7 +101,7 @@ export default function Users({ user, onConnectUser, onStartChat }) {
                   </div>
 
                   {!isSelf && (
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div className="users-row-actions">
                       <button
                         onClick={() => handleAddFriend(u)}
                         disabled={isConnected}

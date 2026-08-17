@@ -11,6 +11,7 @@
     "babel-loader": "^10.0.0",
     "concurrently": "^10.0.3",
     "cross-env": "^10.1.0",
+    "cypress": "^14.5.4",
     "jest": "^30.4.2",
     "mongodb-memory-server": "^11.2.0",
     "nodemon": "^3.1.14",
@@ -22,7 +23,9 @@
     "start": "node server.js",
     "lint": "npm run lint --prefix client",
     "preview": "npm run preview --prefix client",
-    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --runInBand"
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
+    "cy:run": "npx cypress run --config-file cypress.config.cjs",
+    "cy:open": "npx cypress open --config-file cypress.config.cjs"
   },
   "engines": {
     "node": "20.x",
@@ -43,6 +46,7 @@
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
     "method-override": "^3.0.0",
-    "mongoose": "^8.18.2"
+    "mongoose": "^8.18.2",
+    "multer": "^2.2.0"
   }
 }

@@ -19,7 +19,17 @@ const BlogSchema = new mongoose.Schema({
     type: String,
     trim: true,
     required: "Content is required",
-  }
+  },
+  mediaUrl: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  mediaType: {
+    type: String,
+    enum: ["", "image", "video"],
+    default: "",
+  },
 });
 
 export default mongoose.model("Blog", BlogSchema);

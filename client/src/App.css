@@ -1,16 +1,18 @@
 .main-layout {
   display: flex;
-}
-
-.content-area {
-  margin-left: 240px; /* Gives space for the 240px wide side Navbar */
-  padding: 40px;
-  width: calc(100% - 240px);
   min-height: 100vh;
 }
 
+.content-area {
+  margin-left: 250px;
+  padding: 36px 40px 56px;
+  width: calc(100% - 250px);
+  min-height: 100vh;
+  animation: fade-up 0.45s ease both;
+}
+
 .content-area h2 {
-  font-size: 1.8rem;
+  font-size: 1.85rem;
   margin-top: 0;
 }
 
@@ -19,12 +21,30 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .content-area .header-icon {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   color: var(--accent-dark);
   object-fit: contain;
   flex-shrink: 0;
+}
+
+@media (max-width: 860px) {
+  .main-layout {
+    flex-direction: column;
+  }
+
+  .content-area {
+    margin-left: 0;
+    width: 100%;
+    padding: 16px 14px calc(88px + env(safe-area-inset-bottom));
+    min-height: auto;
+  }
+
+  .content-area h2 {
+    font-size: 1.45rem;
+  }
 }

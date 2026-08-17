@@ -14,7 +14,35 @@ const MessageSchema = new mongoose.Schema({
   text: {
     type: String,
     trim: true,
-    required: "Message text is required",
+    default: "",
+  },
+  mediaUrl: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  mediaType: {
+    type: String,
+    enum: ["", "image", "video"],
+    default: "",
+  },
+  messageType: {
+    type: String,
+    enum: ["text", "media", "meeting"],
+    default: "text",
+  },
+  meetingTitle: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  meetingAt: {
+    type: Date,
+  },
+  meetingLocation: {
+    type: String,
+    trim: true,
+    default: "",
   },
   created: {
     type: Date,

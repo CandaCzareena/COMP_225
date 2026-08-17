@@ -26,6 +26,16 @@ const ItemSchema = new mongoose.Schema({
     trim: true,
     default: "marketplace-icon",
   },
+  mediaUrl: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  mediaType: {
+    type: String,
+    enum: ["", "image", "video"],
+    default: "",
+  },
   seller: {
     type: mongoose.Schema.ObjectId,
     ref: "User",

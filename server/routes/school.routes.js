@@ -1,11 +1,21 @@
 import express from "express";
 import schoolCtrl from "../controllers/school.controller.js";
+import authCtrl from "../controllers/auth.controller.js";
+
 const router = express.Router();
-router.route("/api/schools").post(schoolCtrl.create);
-router.route("/api/schools").get(schoolCtrl.list);
-router.route("/api/schools").delete(schoolCtrl.removeAll);
+
+router
+  .route("/api/schools")
+  .get(schoolCtrl.list)
+  .post(authCtrl.requireSignin, schoolCtrl.create)
+  .delete(authCtrl.requireSignin, authCtrl.requireAdmin, schoolCtrl.removeAll);
+
 router.param("schoolId", schoolCtrl.schoolByID);
-router.route("/api/schools/:schoolId").get(schoolCtrl.read);
-router.route("/api/schools/:schoolId").put(schoolCtrl.update);
-router.route("/api/schools/:schoolId").delete(schoolCtrl.remove);
+
+router
+  .route("/api/schools/:schoolId")
+  .get(schoolCtrl.read)
+  .put(authCtrl.requireSignin, schoolCtrl.update)
+  .delete(authCtrl.requireSignin, schoolCtrl.remove);
+
 export default router;

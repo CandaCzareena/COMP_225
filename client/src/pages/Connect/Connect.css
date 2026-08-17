@@ -93,3 +93,9 @@
   background-color: var(--ink);
   color: var(--surface);
 }
+
+@media (max-width: 860px) {
+  .peers-grid {
+    grid-template-columns: 1fr;
+  }
+}

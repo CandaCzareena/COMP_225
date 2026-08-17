@@ -1,21 +1,86 @@
 .auth-page {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   min-height: 100vh;
-  background-color: var(--bg);
-  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem;
+  background:
+    radial-gradient(circle at 14% 20%, rgba(255, 209, 102, 0.45), transparent 30%),
+    radial-gradient(circle at 86% 12%, rgba(255, 122, 89, 0.28), transparent 28%),
+    radial-gradient(circle at 70% 85%, rgba(26, 166, 166, 0.22), transparent 32%),
+    linear-gradient(160deg, #f3fffb 0%, #eef8ff 45%, #fff4ea 100%);
+}
+
+.auth-shell {
+  width: min(980px, 100%);
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+.auth-hero {
+  border-radius: 28px;
+  padding: 2.5rem;
+  color: #fffaf3;
+  background:
+    linear-gradient(145deg, #1aa6a6 0%, #0f8f9a 42%, #ff7a59 120%);
+  box-shadow: var(--shadow-md);
+  animation: fade-up 0.65s ease both;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-hero::after {
+  content: '';
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  right: -40px;
+  bottom: -50px;
+  background: rgba(255, 209, 102, 0.35);
+}
+
+.auth-kicker {
+  display: inline-block;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.9;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 4vw, 3.4rem);
+  color: #fff;
+  line-height: 1.05;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-hero p {
+  font-size: 1.05rem;
+  line-height: 1.55;
+  max-width: 28ch;
+  color: rgba(255, 250, 243, 0.94);
+  position: relative;
+  z-index: 1;
 }
 
 .auth-card {
-  background: var(--surface);
-  padding: 40px;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  padding: 2rem;
+  border-radius: 24px;
   box-shadow: var(--shadow-md);
-  width: 100%;
-  max-width: 450px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
   text-align: center;
-  border: 1px solid var(--border);
+  animation: fade-up 0.65s ease 0.08s both;
 }
 
 .auth-brand {
@@ -27,8 +92,8 @@
 }
 
 .auth-brand .brand-mark {
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -42,7 +107,8 @@
 }
 
 .auth-card h2 {
-  font-size: 2rem;
+  font-family: var(--font-display);
+  font-size: 1.85rem;
   margin: 0;
 }
 
@@ -60,48 +126,52 @@
 
 .form-group {
   text-align: left;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .form-group label {
   display: block;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.82rem;
+  font-weight: 650;
   color: var(--ink-soft);
   margin-bottom: 6px;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
   width: 100%;
-  padding: 10px 12px;
+  padding: 11px 12px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 12px;
   font-size: 0.95rem;
   box-sizing: border-box;
   outline: none;
+  background: var(--surface-soft);
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
   border-color: var(--accent-dark);
+  background: #fff;
 }
 
 .auth-btn {
   width: 100%;
   padding: 12px;
-  background-color: var(--surface);
-  color: var(--ink);
-  border: 1.5px solid var(--ink);
-  border-radius: 6px;
+  background: linear-gradient(135deg, #1aa6a6, #ff7a59);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   margin-top: 10px;
-  transition: background-color 0.15s, color 0.15s;
+  transition: transform 0.15s ease, filter 0.15s ease;
 }
 
 .auth-btn:hover {
-  background-color: var(--ink);
-  color: var(--surface);
+  transform: translateY(-1px);
+  filter: brightness(1.04);
 }
 
 .auth-toggle-text {
@@ -112,7 +182,22 @@
 
 .auth-toggle-text span {
   color: var(--accent-dark);
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   text-decoration: underline;
+}
+
+@media (max-width: 860px) {
+  .auth-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-hero {
+    min-height: auto;
+    padding: 1.75rem;
+  }
+
+  .auth-hero p {
+    max-width: none;
+  }
 }

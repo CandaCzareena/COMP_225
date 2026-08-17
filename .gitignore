@@ -3,3 +3,6 @@ client/node_modules/
 client/dist/
 .env
 uploads/
+cypress/videos/
+cypress/screenshots/
+cypress/node_modules/

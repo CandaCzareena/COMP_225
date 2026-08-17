@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { uploadMedia } from '../../utils/uploadMedia';
 import './Marketplace.css';
 
 function authHeaders() {
@@ -20,9 +21,11 @@ function Marketplace({ user, onContactSeller }) {
   const [items, setItems] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [mediaFile, setMediaFile] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const fetchItems = async () => {
     try {
@@ -44,6 +47,7 @@ function Marketplace({ user, onContactSeller }) {
 
   const resetForm = () => {
     setForm(emptyForm);
+    setMediaFile(null);
     setEditingId(null);
     setShowForm(false);
   };
@@ -52,16 +56,26 @@ function Marketplace({ user, onContactSeller }) {
     e.preventDefault();
     if (!form.title || !form.price) return;
 
-    const payload = {
-      title: form.title,
-      price: Number(form.price),
-      category: form.category,
-      description: form.description,
-      sellerName: user?.name || 'Centennial Student',
-      sellerEmail: user?.email || '',
-    };
-
+    setSaving(true);
     try {
+      let mediaUrl = '';
+      let mediaType = '';
+      if (mediaFile) {
+        const uploaded = await uploadMedia(mediaFile);
+        mediaUrl = uploaded.url;
+        mediaType = uploaded.mediaType;
+      }
+
+      const payload = {
+        title: form.title,
+        price: Number(form.price),
+        category: form.category,
+        description: form.description,
+        sellerName: user?.name || 'Student',
+        sellerEmail: user?.email || '',
+        ...(mediaUrl && { mediaUrl, mediaType }),
+      };
+
       const url = editingId ? `/api/items/${editingId}` : '/api/items';
       const method = editingId ? 'PUT' : 'POST';
       const res = await fetch(url, {
@@ -76,6 +90,8 @@ function Marketplace({ user, onContactSeller }) {
       fetchItems();
     } catch (err) {
       setError(err.message);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -87,6 +103,7 @@ function Marketplace({ user, onContactSeller }) {
       category: item.category || 'Other',
       description: item.description || '',
     });
+    setMediaFile(null);
     setShowForm(true);
   };
 
@@ -119,6 +136,8 @@ function Marketplace({ user, onContactSeller }) {
     return sellerId && String(sellerId) === String(user?._id);
   };
 
+  const canManage = (item) => isOwner(item) || user?.role === 'admin';
+
   return (
     <div className="marketplace-page">
       <div
@@ -130,24 +149,16 @@ function Marketplace({ user, onContactSeller }) {
             <svg className="header-icon">
               <use href="/icons.svg#marketplace-icon" />
             </svg>
-            Centennial Student Marketplace
+            Student Marketplace
           </h2>
-          <p>Buy, sell, or trade textbooks, course supplies, and handmade items.</p>
+          <p>Buy, sell, or trade textbooks, gear, and handmade items — with photos or video.</p>
         </div>
         <button
           onClick={() => {
             if (showForm) resetForm();
             else setShowForm(true);
           }}
-          style={{
-            padding: '10px 18px',
-            backgroundColor: '#28a745',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-          }}
+          className="market-primary-btn"
         >
           {showForm ? 'Cancel' : '+ Sell Item'}
         </button>
@@ -156,25 +167,16 @@ function Marketplace({ user, onContactSeller }) {
       {error && <p style={{ color: '#c0392b' }}>{error}</p>}
 
       {showForm && (
-        <form
-          onSubmit={handleSubmit}
-          style={{
-            background: '#f8f9fa',
-            padding: '1.5rem',
-            borderRadius: '8px',
-            marginBottom: '2rem',
-            border: '1px solid #ddd',
-          }}
-        >
+        <form onSubmit={handleSubmit} className="market-form">
           <h3>{editingId ? 'Edit Listing' : 'List an Item for Sale'}</h3>
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '10px', flexWrap: 'wrap' }}>
             <input
               type="text"
               placeholder="Item Title (e.g. COMP228 Textbook)"
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
               required
-              style={{ flex: 2, padding: '8px' }}
+              style={{ flex: 2, padding: '8px', minWidth: '180px' }}
             />
             <input
               type="number"
@@ -182,12 +184,12 @@ function Marketplace({ user, onContactSeller }) {
               value={form.price}
               onChange={(e) => setForm({ ...form, price: e.target.value })}
               required
-              style={{ flex: 1, padding: '8px' }}
+              style={{ flex: 1, padding: '8px', minWidth: '100px' }}
             />
             <select
               value={form.category}
               onChange={(e) => setForm({ ...form, category: e.target.value })}
-              style={{ flex: 1, padding: '8px' }}
+              style={{ flex: 1, padding: '8px', minWidth: '120px' }}
             >
               <option value="Books">Books</option>
               <option value="Electronics">Electronics</option>
@@ -207,18 +209,17 @@ function Marketplace({ user, onContactSeller }) {
               boxSizing: 'border-box',
             }}
           />
-          <button
-            type="submit"
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#007bff',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
-          >
-            {editingId ? 'Save Changes' : 'Post Listing'}
+          <label className="media-picker">
+            Photo / video
+            <input
+              type="file"
+              accept="image/*,video/*"
+              onChange={(e) => setMediaFile(e.target.files?.[0] || null)}
+            />
+          </label>
+          {mediaFile && <p className="media-name">{mediaFile.name}</p>}
+          <button type="submit" className="market-primary-btn" disabled={saving}>
+            {saving ? 'Saving...' : editingId ? 'Save Changes' : 'Post Listing'}
           </button>
         </form>
       )}
@@ -230,11 +231,17 @@ function Marketplace({ user, onContactSeller }) {
         {items.map((item) => (
           <div key={item._id} className="market-card">
             <div className="market-item-image">
-              <span className="icon-badge">
-                <svg>
-                  <use href={`/icons.svg#${item.icon || 'marketplace-icon'}`} />
-                </svg>
-              </span>
+              {item.mediaUrl && item.mediaType === 'image' ? (
+                <img src={item.mediaUrl} alt={item.title} />
+              ) : item.mediaUrl && item.mediaType === 'video' ? (
+                <video src={item.mediaUrl} controls />
+              ) : (
+                <span className="icon-badge">
+                  <svg>
+                    <use href={`/icons.svg#${item.icon || 'marketplace-icon'}`} />
+                  </svg>
+                </span>
+              )}
             </div>
             <div className="market-card-content">
               <div className="market-card-header">
@@ -253,11 +260,13 @@ function Marketplace({ user, onContactSeller }) {
                     Contact Seller
                   </button>
                 )}
-                {isOwner(item) && (
+                {canManage(item) && (
                   <>
-                    <button className="interest-btn" onClick={() => startEdit(item)}>
-                      Edit
-                    </button>
+                    {isOwner(item) && (
+                      <button className="interest-btn" onClick={() => startEdit(item)}>
+                        Edit
+                      </button>
+                    )}
                     <button
                       className="interest-btn"
                       style={{ background: '#c0392b', borderColor: '#c0392b' }}

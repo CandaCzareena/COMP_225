@@ -10,7 +10,8 @@ function Auth({ onLoginSuccess }) {
     studentNumber: '',
     program: '',
     origin: '',
-    password: ''
+    role: 'student',
+    password: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,8 +20,6 @@ function Auth({ onLoginSuccess }) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Calls POST /auth/signin, stores the token + user in localStorage,
-  // and tells App.jsx that login succeeded.
   const doSignin = async (email, password) => {
     const res = await fetch('/auth/signin', {
       method: 'POST',
@@ -30,14 +29,11 @@ function Auth({ onLoginSuccess }) {
     const data = await res.json();
 
     if (!res.ok) {
-      // res.ok is false for any 4xx/5xx status
       throw new Error(data.error || 'Login failed');
     }
 
-    // Save the session so a page refresh doesn't log the user out
     localStorage.setItem('coltcircle_token', data.token);
     localStorage.setItem('coltcircle_user', JSON.stringify(data.user));
-
     onLoginSuccess(data.user);
   };
 
@@ -45,25 +41,23 @@ function Auth({ onLoginSuccess }) {
     e.preventDefault();
     setError('');
 
-    const isCentennialEmail = formData.email.endsWith('@my.centennialcollege.ca');
-    const isValidStudentNumber = /^\d{9}$/.test(formData.studentNumber || '');
+    if (!formData.email.includes('@') || !formData.email.includes('.')) {
+      setError('Please enter a valid email address.');
+      return;
+    }
 
     if (!isLogin) {
-      // ---------- Registration flow ----------
-      if (!isCentennialEmail) {
-        setError('Access Denied. Only Centennial student emails (@my.centennialcollege.ca) are allowed.');
+      if (!formData.name.trim()) {
+        setError('Full name is required.');
         return;
       }
-      if (!isValidStudentNumber) {
-        setError('A valid 9-digit Student Number is mandatory.');
+      if (formData.role === 'student' && formData.studentNumber && !/^\d{5,12}$/.test(formData.studentNumber)) {
+        setError('Student number should be 5–12 digits if provided.');
         return;
       }
 
       setLoading(true);
       try {
-        // Step 1: create the user in the database.
-        // Note: the backend expects "password", not "hashed_password" -
-        // the User model has a virtual "password" field that hashes it automatically.
         const signupRes = await fetch('/api/users', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -74,6 +68,7 @@ function Auth({ onLoginSuccess }) {
             studentNumber: formData.studentNumber,
             program: formData.program,
             origin: formData.origin,
+            role: formData.role,
           }),
         });
         const signupData = await signupRes.json();
@@ -84,7 +79,6 @@ function Auth({ onLoginSuccess }) {
           );
         }
 
-        // Step 2: log the new user in right away so they land on the dashboard
         await doSignin(formData.email, formData.password);
       } catch (err) {
         setError(err.message);
@@ -92,12 +86,6 @@ function Auth({ onLoginSuccess }) {
         setLoading(false);
       }
     } else {
-      // ---------- Login flow ----------
-      if (!isCentennialEmail) {
-        setError('Please use your valid Centennial student email to login.');
-        return;
-      }
-
       setLoading(true);
       try {
         await doSignin(formData.email, formData.password);
@@ -111,62 +99,119 @@ function Auth({ onLoginSuccess }) {
 
   return (
     <div className="auth-page">
-      <div className="auth-card">
-        <div className="auth-brand">
-          <span className="brand-mark">
-            <img src={logo} alt="ColtCircle logo" />
-          </span>
-          <h2>ColtCircle</h2>
+      <div className="auth-shell">
+        <section className="auth-hero">
+          <span className="auth-kicker">Campus social + marketplace</span>
+          <h1>ColtCircle</h1>
+          <p>
+            Built for students and educators everywhere — post tips, trade gear,
+            message tutors, and stay connected.
+          </p>
+        </section>
+
+        <div className="auth-card">
+          <div className="auth-brand">
+            <span className="brand-mark">
+              <img src={logo} alt="ColtCircle logo" />
+            </span>
+            <h2>{isLogin ? 'Welcome back' : 'Join the circle'}</h2>
+          </div>
+          <p className="auth-subtitle">
+            {isLogin
+              ? 'Sign in with any school or personal email'
+              : 'Open to all students and educators — not just Centennial'}
+          </p>
+
+          {error && <div className="auth-error">{error}</div>}
+
+          <form onSubmit={handleSubmit}>
+            {!isLogin && (
+              <>
+                <div className="form-group">
+                  <label>I am a</label>
+                  <select name="role" value={formData.role} onChange={handleChange}>
+                    <option value="student">Student</option>
+                    <option value="educator">Educator / Tutor</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Full Name</label>
+                  <input type="text" name="name" value={formData.name} onChange={handleChange} required />
+                </div>
+                {formData.role === 'student' && (
+                  <div className="form-group">
+                    <label>Student Number (optional)</label>
+                    <input
+                      type="text"
+                      name="studentNumber"
+                      value={formData.studentNumber}
+                      onChange={handleChange}
+                      placeholder="e.g. 301234567"
+                    />
+                  </div>
+                )}
+                <div className="form-group">
+                  <label>{formData.role === 'educator' ? 'Department / Subject' : 'Program'}</label>
+                  <input
+                    type="text"
+                    name="program"
+                    placeholder={
+                      formData.role === 'educator'
+                        ? 'e.g. Software Engineering'
+                        : 'e.g. Software Engineering Technology'
+                    }
+                    value={formData.program}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Country of Origin (Optional)</label>
+                  <input type="text" name="origin" value={formData.origin} onChange={handleChange} />
+                </div>
+              </>
+            )}
+
+            <div className="form-group">
+              <label>Email</label>
+              <input
+                type="email"
+                name="email"
+                placeholder="you@school.edu"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Password</label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                minLength={6}
+              />
+            </div>
+
+            <button type="submit" className="auth-btn" disabled={loading}>
+              {loading ? 'Please wait...' : isLogin ? 'Login' : 'Sign Up'}
+            </button>
+          </form>
+
+          <p className="auth-toggle-text">
+            {isLogin ? "Don't have an account? " : 'Already have an account? '}
+            <span
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setError('');
+              }}
+            >
+              {isLogin ? 'Register here' : 'Login here'}
+            </span>
+          </p>
         </div>
-        <p className="auth-subtitle">
-          {isLogin ? 'Connect with your Centennial peers' : 'Create your private student account'}
-        </p>
-
-        {error && <div className="auth-error">{error}</div>}
-
-        <form onSubmit={handleSubmit}>
-          {!isLogin && (
-            <>
-              <div className="form-group">
-                <label>Full Name</label>
-                <input type="text" name="name" value={formData.name} onChange={handleChange} required />
-              </div>
-              <div className="form-group">
-                <label>Student Number (9 Digits)</label>
-                <input type="text" name="studentNumber" value={formData.studentNumber} onChange={handleChange} required />
-              </div>
-              <div className="form-group">
-                <label>Program</label>
-                <input type="text" name="program" placeholder="e.g., Software Engineering" value={formData.program} onChange={handleChange} required />
-              </div>
-              <div className="form-group">
-                <label>Country of Origin (Optional)</label>
-                <input type="text" name="origin" value={formData.origin} onChange={handleChange} />
-              </div>
-            </>
-          )}
-
-          <div className="form-group">
-            <label>Centennial Student Email</label>
-            <input type="email" name="email" placeholder="username@my.centennialcollege.ca" value={formData.email} onChange={handleChange} required />
-          </div>
-
-          <div className="form-group">
-            <label>Password</label>
-            <input type="password" name="password" value={formData.password} onChange={handleChange} required minLength={6} />
-          </div>
-
-          <button type="submit" className="auth-btn" disabled={loading}>
-            {loading ? 'Please wait...' : (isLogin ? 'Login' : 'Sign Up')}
-          </button>
-        </form>
-
-        <p className="auth-toggle-text">
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
-          <span onClick={() => { setIsLogin(!isLogin); setError(''); }}>
-            {isLogin ? 'Register here' : 'Login here'}
-          </span>
-        </p>
       </div>
     </div>
   );

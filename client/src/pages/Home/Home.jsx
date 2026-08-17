@@ -1,16 +1,27 @@
 import { useState, useEffect } from 'react';
 import logo from '../../assets/logo.png';
+import { uploadMedia } from '../../utils/uploadMedia';
 import './Home.css';
+
+function authHeaders() {
+  const token = localStorage.getItem('coltcircle_token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token && { Authorization: `Bearer ${token}` }),
+  };
+}
 
 function Home({ user }) {
   const [posts, setPosts] = useState([]);
   const [newTitle, setNewTitle] = useState('');
   const [newPost, setNewPost] = useState('');
+  const [mediaFile, setMediaFile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
+  const [posting, setPosting] = useState(false);
 
   const fetchPosts = async () => {
     try {
@@ -34,14 +45,25 @@ function Home({ user }) {
     e.preventDefault();
     if (!newPost.trim() || !newTitle.trim()) return;
 
+    setPosting(true);
     try {
+      let mediaUrl = '';
+      let mediaType = '';
+      if (mediaFile) {
+        const uploaded = await uploadMedia(mediaFile);
+        mediaUrl = uploaded.url;
+        mediaType = uploaded.mediaType;
+      }
+
       const res = await fetch('/api/blogs', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify({
           title: newTitle,
-          username: user?.name || 'Centennial Student',
+          username: user?.name || 'Student',
           content: newPost,
+          mediaUrl,
+          mediaType,
         }),
       });
       const data = await res.json();
@@ -49,9 +71,12 @@ function Home({ user }) {
 
       setNewTitle('');
       setNewPost('');
+      setMediaFile(null);
       fetchPosts();
     } catch (err) {
       setError(err.message);
+    } finally {
+      setPosting(false);
     }
   };
 
@@ -74,11 +99,11 @@ function Home({ user }) {
     try {
       const res = await fetch(`/api/blogs/${postId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify({
           title: editTitle,
           content: editContent,
-          username: user?.name || 'Centennial Student',
+          username: user?.name || 'Student',
         }),
       });
       const data = await res.json();
@@ -92,7 +117,10 @@ function Home({ user }) {
 
   const handleDelete = async (postId) => {
     try {
-      const res = await fetch(`/api/blogs/${postId}`, { method: 'DELETE' });
+      const res = await fetch(`/api/blogs/${postId}`, {
+        method: 'DELETE',
+        headers: authHeaders(),
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Could not delete post');
       fetchPosts();
@@ -108,7 +136,10 @@ function Home({ user }) {
           Welcome back, {user?.name || 'Colt'}!
           <img className="header-icon" src={logo} alt="" />
         </h1>
-        <p>Catch up with what&apos;s happening across Centennial College campuses today.</p>
+        <p>
+          Good to see you — share tips, wins, and short videos with students and
+          educators in your circle.
+        </p>
       </div>
 
       {error && <div className="auth-error">{error}</div>}
@@ -129,9 +160,18 @@ function Home({ user }) {
             onChange={(e) => setNewPost(e.target.value)}
             required
           />
-          <div className="form-actions">
-            <button type="submit" className="post-submit-btn">
-              Share to Circle
+          <div className="form-actions" style={{ gap: '10px', flexWrap: 'wrap' }}>
+            <label className="media-picker">
+              Photo / video
+              <input
+                type="file"
+                accept="image/*,video/*"
+                onChange={(e) => setMediaFile(e.target.files?.[0] || null)}
+              />
+            </label>
+            {mediaFile && <span className="media-name">{mediaFile.name}</span>}
+            <button type="submit" className="post-submit-btn" disabled={posting}>
+              {posting ? 'Posting...' : 'Share to Circle'}
             </button>
           </div>
         </form>
@@ -184,6 +224,12 @@ function Home({ user }) {
               <>
                 <div className="post-body">
                   <p>{post.content}</p>
+                  {post.mediaUrl && post.mediaType === 'image' && (
+                    <img className="post-media" src={post.mediaUrl} alt="" />
+                  )}
+                  {post.mediaUrl && post.mediaType === 'video' && (
+                    <video className="post-media" src={post.mediaUrl} controls />
+                  )}
                 </div>
                 <div className="post-footer" style={{ gap: '8px' }}>
                   {user?.name === post.username && (

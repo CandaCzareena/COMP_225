@@ -1,8 +1,28 @@
 import User from "../models/user.model.js";
 import errorHandler from "./error.controller.js";
+import { createNotification } from "../helpers/notify.js";
 const create = async (req, res) => {
-  const user = new User(req.body);
   try {
+    const requestedRole = req.body.role;
+    const role =
+      requestedRole === "educator"
+        ? "educator"
+        : requestedRole === "admin" &&
+            process.env.ADMIN_EMAIL &&
+            req.body.email === process.env.ADMIN_EMAIL
+          ? "admin"
+          : "student";
+
+    const user = new User({
+      name: req.body.name,
+      email: req.body.email,
+      password: req.body.password,
+      role,
+      studentNumber: req.body.studentNumber || "",
+      program: req.body.program || "",
+      origin: req.body.origin || "",
+      profilePhoto: req.body.profilePhoto || "",
+    });
     await user.save();
     return res.status(200).json({
       message: "Successfully signed up!",
@@ -17,7 +37,7 @@ const create = async (req, res) => {
 const list = async (req, res) => {
   try {
     let users = await User.find().select(
-      "name email program studentNumber origin profilePhoto updated created"
+      "name email role program studentNumber origin profilePhoto updated created"
     );
     res.json(users);
   } catch (err) {
@@ -63,6 +83,13 @@ const update = async (req, res) => {
         user[field] = req.body[field];
       }
     });
+    // Only admins can change role via profile update
+    if (req.body.role !== undefined && req.auth?.role === "admin") {
+      user.role = req.body.role;
+    }
+    if (req.body.password && (String(user._id) === String(req.auth._id) || req.auth?.role === "admin")) {
+      user.password = req.body.password;
+    }
     user.updated = Date.now();
     await user.save();
 
@@ -70,6 +97,7 @@ const update = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      role: user.role || "student",
       program: user.program,
       studentNumber: user.studentNumber,
       origin: user.origin,
@@ -141,6 +169,17 @@ const connect = async (req, res) => {
       friend.updated = Date.now();
       await user.save();
       await friend.save();
+
+      await createNotification({
+        recipientId: friend._id,
+        actorId: user._id,
+        actorName: user.name,
+        type: "connect",
+        title: `${user.name} connected with you`,
+        body: "You have a new connection on ColtCircle.",
+        link: "connect",
+        meta: { actorId: String(user._id) },
+      });
     }
 
     return res.json({

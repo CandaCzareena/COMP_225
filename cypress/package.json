@@ -1,0 +1,12 @@
+{
+  "name": "coltcircle-e2e",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "cy:open": "cypress open",
+    "cy:run": "cypress run"
+  },
+  "devDependencies": {
+    "cypress": "^14.5.4"
+  }
+}

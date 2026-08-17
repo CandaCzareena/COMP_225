@@ -1,12 +1,37 @@
 import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
 import errorHandler from "./error.controller.js";
+import { createNotification } from "../helpers/notify.js";
 
 const formatTime = (date) => {
   if (!date) return "";
   const d = new Date(date);
   return d.toLocaleString();
 };
+
+const previewText = (msg) => {
+  if (msg.messageType === "meeting") {
+    return `Meeting: ${msg.meetingTitle || "Tutor session"}`;
+  }
+  if (msg.mediaType === "image") return msg.text || "Photo";
+  if (msg.mediaType === "video") return msg.text || "Video";
+  return msg.text || "";
+};
+
+const serializeMessage = (msg) => ({
+  id: String(msg._id),
+  senderId: String(msg.sender?._id || msg.sender),
+  sender: msg.sender?.name || "Student",
+  text: msg.text || "",
+  mediaUrl: msg.mediaUrl || "",
+  mediaType: msg.mediaType || "",
+  messageType: msg.messageType || "text",
+  meetingTitle: msg.meetingTitle || "",
+  meetingAt: msg.meetingAt || null,
+  meetingLocation: msg.meetingLocation || "",
+  time: formatTime(msg.created),
+  created: msg.created,
+});
 
 const listConversations = async (req, res) => {
   try {
@@ -38,7 +63,7 @@ const listConversations = async (req, res) => {
         name: other.name || "Student",
         email: other.email || "",
         profilePhoto: other.profilePhoto || "",
-        lastMessage: msg.text,
+        lastMessage: previewText(msg),
         time: formatTime(msg.created),
         created: msg.created,
       });
@@ -58,7 +83,7 @@ const listWithUser = async (req, res) => {
     const otherUserId = req.params.userId;
 
     const otherUser = await User.findById(otherUserId).select(
-      "name email profilePhoto"
+      "name email profilePhoto role"
     );
     if (!otherUser) {
       return res.status(404).json({ error: "User not found" });
@@ -80,15 +105,9 @@ const listWithUser = async (req, res) => {
         name: otherUser.name,
         email: otherUser.email,
         profilePhoto: otherUser.profilePhoto || "",
+        role: otherUser.role || "student",
       },
-      messages: messages.map((msg) => ({
-        id: String(msg._id),
-        senderId: String(msg.sender?._id || msg.sender),
-        sender: msg.sender?.name || "Student",
-        text: msg.text,
-        time: formatTime(msg.created),
-        created: msg.created,
-      })),
+      messages: messages.map(serializeMessage),
     });
   } catch (err) {
     return res.status(400).json({
@@ -100,12 +119,19 @@ const listWithUser = async (req, res) => {
 const create = async (req, res) => {
   try {
     const senderId = req.auth._id;
-    const { recipientId, text } = req.body;
+    const {
+      recipientId,
+      text,
+      mediaUrl,
+      mediaType,
+      messageType,
+      meetingTitle,
+      meetingAt,
+      meetingLocation,
+    } = req.body;
 
-    if (!recipientId || !text?.trim()) {
-      return res.status(400).json({
-        error: "recipientId and text are required",
-      });
+    if (!recipientId) {
+      return res.status(400).json({ error: "recipientId is required" });
     }
 
     if (String(senderId) === String(recipientId)) {
@@ -117,24 +143,71 @@ const create = async (req, res) => {
       return res.status(404).json({ error: "Recipient not found" });
     }
 
+    const type = messageType || (mediaUrl ? "media" : "text");
+
+    if (type === "meeting") {
+      if (!meetingTitle?.trim() || !meetingAt) {
+        return res.status(400).json({
+          error: "meetingTitle and meetingAt are required for meetings",
+        });
+      }
+    } else if (!text?.trim() && !mediaUrl) {
+      return res.status(400).json({
+        error: "Message text or media is required",
+      });
+    }
+
     const message = await Message.create({
       sender: senderId,
       recipient: recipientId,
-      text: text.trim(),
+      text: (text || "").trim(),
+      mediaUrl: mediaUrl || "",
+      mediaType: mediaType || "",
+      messageType: type,
+      meetingTitle: meetingTitle || "",
+      meetingAt: meetingAt ? new Date(meetingAt) : undefined,
+      meetingLocation: meetingLocation || "",
     });
 
     const populated = await Message.findById(message._id)
       .populate("sender", "name email")
       .lean();
 
+    const senderName = populated.sender?.name || "Someone";
+    if (type === "meeting") {
+      await createNotification({
+        recipientId: recipient._id,
+        actorId: senderId,
+        actorName: senderName,
+        type: "meeting",
+        title: `${senderName} scheduled a tutor session`,
+        body: `${meetingTitle} · ${new Date(meetingAt).toLocaleString()}`,
+        link: "messages",
+        meta: {
+          partnerId: String(senderId),
+          meetingTitle,
+          meetingAt,
+        },
+      });
+    } else {
+      const preview =
+        (text || "").trim() ||
+        (mediaType === "video" ? "Sent a video" : mediaType === "image" ? "Sent a photo" : "Sent a message");
+      await createNotification({
+        recipientId: recipient._id,
+        actorId: senderId,
+        actorName: senderName,
+        type: "message",
+        title: `${senderName} messaged you`,
+        body: preview.slice(0, 120),
+        link: "messages",
+        meta: { partnerId: String(senderId) },
+      });
+    }
+
     return res.status(201).json({
-      id: String(populated._id),
-      senderId: String(populated.sender._id),
-      sender: populated.sender.name,
+      ...serializeMessage(populated),
       recipientId: String(recipient._id),
-      text: populated.text,
-      time: formatTime(populated.created),
-      created: populated.created,
     });
   } catch (err) {
     return res.status(400).json({

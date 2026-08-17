@@ -13,6 +13,10 @@ import schoolRoutes from "./routes/school.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import itemRoutes from "./routes/item.routes.js";
 import messageRoutes from "./routes/message.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
+import uploadRoutes from "./routes/upload.routes.js";
+import notificationRoutes from "./routes/notification.routes.js";
+import { uploadDir } from "./middleware/upload.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,20 +25,19 @@ const isProd =
 
 const app = express();
 
-// 1. Global Security & Body Parsing Middleware (MUST BE BEFORE ROUTES)
-app.use(express.json({ limit: "5mb" }));
-app.use(express.urlencoded({ extended: true, limit: "5mb" }));
+app.use(express.json({ limit: "15mb" }));
+app.use(express.urlencoded({ extended: true, limit: "15mb" }));
 app.use(cookieParser());
 app.use(compress());
 app.use(
   helmet({
-    contentSecurityPolicy: false, // allow Vite assets + profile photo data URLs
+    contentSecurityPolicy: false,
     crossOriginResourcePolicy: { policy: "cross-origin" },
   })
 );
 app.use(cors());
+app.use("/uploads", express.static(uploadDir));
 
-// 2. API Routes
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", app: "ColtCircle" });
 });
@@ -45,17 +48,18 @@ app.use("/", schoolRoutes);
 app.use("/", authRoutes);
 app.use("/", itemRoutes);
 app.use("/", messageRoutes);
+app.use("/", adminRoutes);
+app.use("/", uploadRoutes);
+app.use("/", notificationRoutes);
 
-// 3. Production: serve React build from the same server
 if (isProd) {
   const clientDist = path.resolve(__dirname, "../client/dist");
   app.use(express.static(clientDist));
-  app.get(/^(?!\/api(?:\/|$)|\/auth(?:\/|$)).*/, (req, res) => {
+  app.get(/^(?!\/api(?:\/|$)|\/auth(?:\/|$)|\/uploads(?:\/|$)).*/, (req, res) => {
     res.sendFile(path.join(clientDist, "index.html"));
   });
 }
 
-// 4. Global Error Handler
 app.use((err, req, res, next) => {
   if (err.name === "UnauthorizedError") {
     res.status(401).json({ error: err.name + ": " + err.message });

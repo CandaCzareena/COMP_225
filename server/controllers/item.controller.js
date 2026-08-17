@@ -8,6 +8,8 @@ const iconForCategory = (category) => {
   return "marketplace-icon";
 };
 
+const isAdmin = (auth) => auth?.role === "admin";
+
 const create = async (req, res) => {
   try {
     const item = new Item({
@@ -16,6 +18,8 @@ const create = async (req, res) => {
       category: req.body.category || "Other",
       description: req.body.description || "",
       icon: req.body.icon || iconForCategory(req.body.category),
+      mediaUrl: req.body.mediaUrl || "",
+      mediaType: req.body.mediaType || "",
       seller: req.auth?._id,
       sellerName: req.body.sellerName || req.body.seller?.name || "Student",
       sellerEmail: req.body.sellerEmail || req.body.seller?.email || "",
@@ -61,7 +65,12 @@ const update = async (req, res) => {
     const ownerId = item.seller ? String(item.seller) : null;
     const requesterId = req.auth?._id ? String(req.auth._id) : null;
 
-    if (ownerId && requesterId && ownerId !== requesterId) {
+    if (
+      ownerId &&
+      requesterId &&
+      ownerId !== requesterId &&
+      !isAdmin(req.auth)
+    ) {
       return res.status(403).json({ error: "Not authorized to update this item" });
     }
 
@@ -73,6 +82,8 @@ const update = async (req, res) => {
     }
     if (req.body.description !== undefined) item.description = req.body.description;
     if (req.body.icon !== undefined) item.icon = req.body.icon;
+    if (req.body.mediaUrl !== undefined) item.mediaUrl = req.body.mediaUrl;
+    if (req.body.mediaType !== undefined) item.mediaType = req.body.mediaType;
     item.updated = Date.now();
 
     await item.save();
@@ -90,7 +101,12 @@ const remove = async (req, res) => {
     const ownerId = item.seller ? String(item.seller) : null;
     const requesterId = req.auth?._id ? String(req.auth._id) : null;
 
-    if (ownerId && requesterId && ownerId !== requesterId) {
+    if (
+      ownerId &&
+      requesterId &&
+      ownerId !== requesterId &&
+      !isAdmin(req.auth)
+    ) {
       return res.status(403).json({ error: "Not authorized to delete this item" });
     }
 
