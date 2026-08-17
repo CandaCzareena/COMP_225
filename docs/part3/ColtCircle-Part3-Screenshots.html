@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ColtCircle — Part 3 Screenshot Document</title>
+  <style>
+    :root {
+      --ink: #0f3d3e;
+      --teal: #0d9488;
+      --coral: #e07a5f;
+      --bg: #f4fbf9;
+      --card: #ffffff;
+      --muted: #5a6f6f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "DM Sans", system-ui, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(160deg, #fff8e7 0%, var(--bg) 40%, #e8f7f5 100%);
+      line-height: 1.45;
+    }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+    header.cover {
+      background: linear-gradient(145deg, #0d9488, #115e59 55%, #e07a5f);
+      color: #fff;
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 12px 40px rgba(13, 148, 136, 0.25);
+    }
+    header.cover h1 { margin: 0 0 0.35rem; font-size: 2.1rem; letter-spacing: -0.02em; }
+    header.cover p { margin: 0.25rem 0; opacity: 0.95; }
+    .meta { font-size: 0.95rem; opacity: 0.9; margin-top: 1rem !important; }
+    nav.toc {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2rem;
+      border: 1px solid rgba(13, 148, 136, 0.15);
+    }
+    nav.toc h2 { margin: 0 0 0.75rem; font-size: 1.1rem; color: var(--teal); }
+    nav.toc ol { margin: 0; padding-left: 1.25rem; }
+    nav.toc a { color: var(--ink); text-decoration: none; }
+    nav.toc a:hover { color: var(--teal); text-decoration: underline; }
+    section.shot {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 1.25rem 1.25rem 1.5rem;
+      margin-bottom: 1.75rem;
+      border: 1px solid rgba(15, 61, 62, 0.08);
+      box-shadow: 0 4px 20px rgba(15, 61, 62, 0.06);
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .label {
+      display: inline-block;
+      background: #ccfbf1;
+      color: #0f766e;
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      margin-bottom: 0.5rem;
+    }
+    section.shot h2 { margin: 0 0 0.35rem; font-size: 1.35rem; }
+    section.shot .desc { color: var(--muted); margin: 0 0 1rem; font-size: 0.95rem; }
+    section.shot img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+      border: 1px solid rgba(15, 61, 62, 0.1);
+      background: #f8fafc;
+    }
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 2rem;
+    }
+    @media print {
+      body { background: #fff; }
+      .wrap { max-width: none; padding: 0.5in; }
+      header.cover { box-shadow: none; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      section.shot { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="cover">
+      <p style="margin:0;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;opacity:0.85;">COMP229 · Project Part 3</p>
+      <h1>ColtCircle — Labeled Screenshots</h1>
+      <p>Campus social + marketplace for students and educators</p>
+      <p class="meta">
+        Team: Czareena Canda · Nico Ariza · Saul Ramirez Barragan<br />
+        GitHub: https://github.com/CandaCzareena/COMP_225<br />
+        Captured from local UI with live MongoDB Atlas (admin create/delete demonstrated on a temporary demo user).
+      </p>
+    </header>
+
+    <nav class="toc">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#s01">Login</a></li>
+        <li><a href="#s02">Sign Up</a></li>
+        <li><a href="#s03">Home Feed</a></li>
+        <li><a href="#s04">Connect &amp; Study Hub</a></li>
+        <li><a href="#s05">Student Marketplace</a></li>
+        <li><a href="#s06">Messages</a></li>
+        <li><a href="#s07">My Profile</a></li>
+        <li><a href="#s08">Student Directory (Users)</a></li>
+        <li><a href="#s09">Admin Console</a></li>
+        <li><a href="#s09b">Admin Create User</a></li>
+        <li><a href="#s09c">Admin Delete User</a></li>
+        <li><a href="#s10">Alerts / Notifications</a></li>
+        <li><a href="#s11">Mobile Home Layout</a></li>
+      </ol>
+    </nav>
+
+    <section class="shot" id="s01">
+      <span class="label">01 · Auth</span>
+      <h2>Login</h2>
+      <p class="desc">Brand hero + sign-in form. Any school or personal email; opens the authenticated app shell.</p>
+      <img src="screenshots/01-auth-login.png" alt="ColtCircle login screen" />
+    </section>
+
+    <section class="shot" id="s02">
+      <span class="label">02 · Auth</span>
+      <h2>Sign Up</h2>
+      <p class="desc">Open registration for students and educators (role picker, name, optional student number/program, email, password).</p>
+      <img src="screenshots/02-auth-signup.png" alt="ColtCircle signup screen" />
+    </section>
+
+    <section class="shot" id="s03">
+      <span class="label">03 · Core</span>
+      <h2>Home Feed</h2>
+      <p class="desc">Welcome banner, create post (title, body, photo/video), and circle feed. Sidebar: Alerts, Home, Connect, Marketplace, Messages, Profile, Users, Admin.</p>
+      <img src="screenshots/03-home-feed.png" alt="Home feed with post composer" />
+    </section>
+
+    <section class="shot" id="s04">
+      <span class="label">04 · Social</span>
+      <h2>Connect &amp; Study Hub</h2>
+      <p class="desc">Shows real connections from the Student Directory for study partners and tutors.</p>
+      <img src="screenshots/04-connect.png" alt="Connect and Study Hub page" />
+    </section>
+
+    <section class="shot" id="s05">
+      <span class="label">05 · Commerce</span>
+      <h2>Student Marketplace</h2>
+      <p class="desc">Buy, sell, or trade textbooks/gear with media. “+ Sell Item” starts a listing.</p>
+      <img src="screenshots/05-marketplace.png" alt="Student Marketplace page" />
+    </section>
+
+    <section class="shot" id="s06">
+      <span class="label">06 · Messaging</span>
+      <h2>Messages</h2>
+      <p class="desc">Chat list + conversation pane, media attach, and tutor meeting scheduling (from Users → Message).</p>
+      <img src="screenshots/06-messages.png" alt="Messages chat interface" />
+    </section>
+
+    <section class="shot" id="s07">
+      <span class="label">07 · Account</span>
+      <h2>My Profile</h2>
+      <p class="desc">Avatar/photo upload, academic info (program, student ID, origin), and personal marketplace listings.</p>
+      <img src="screenshots/07-profile.png" alt="My Profile page" />
+    </section>
+
+    <section class="shot" id="s08">
+      <span class="label">08 · Directory</span>
+      <h2>Student Directory (Users)</h2>
+      <p class="desc">Searchable directory to Connect or Message other students and educators.</p>
+      <img src="screenshots/08-users-directory.png" alt="Student Directory users page" />
+    </section>
+
+    <section class="shot" id="s09">
+      <span class="label">09 · Admin</span>
+      <h2>Admin Console</h2>
+      <p class="desc">Admin-only overview: Add user form + users table (roles, credentials, Edit/Delete). Marketplace tab manages listings.</p>
+      <img src="screenshots/09-admin-console.png" alt="Admin Console overview" />
+    </section>
+
+    <section class="shot" id="s09b">
+      <span class="label">09b · Admin</span>
+      <h2>Admin Create User</h2>
+      <p class="desc">Admin fills Add user (name, email, password, role/program) and clicks Create user. The new temporary demo user appears in the table.</p>
+      <img src="screenshots/09b-admin-create-user.png" alt="Admin created a new user in the table" />
+    </section>
+
+    <section class="shot" id="s09c">
+      <span class="label">09c · Admin</span>
+      <h2>Admin Delete User</h2>
+      <p class="desc">Admin deletes the temporary demo user (confirm dialog). Table no longer shows that user; the main admin account remains.</p>
+      <img src="screenshots/09c-admin-delete-user.png" alt="Admin deleted demo user from the table" />
+    </section>
+
+    <section class="shot" id="s10">
+      <span class="label">10 · Alerts</span>
+      <h2>Alerts / Notifications</h2>
+      <p class="desc">Bell panel for connect, message, post, and meeting notifications; Mark all read.</p>
+      <img src="screenshots/10-alerts-panel.png" alt="Notifications alerts panel" />
+    </section>
+
+    <section class="shot" id="s11">
+      <span class="label">11 · Responsive</span>
+      <h2>Mobile Home Layout</h2>
+      <p class="desc">Narrow viewport: compact top nav (Home / Connect / Market / Chats / Profile) and mobile-friendly feed composer.</p>
+      <img src="screenshots/11-mobile-home.png" alt="Mobile home layout" />
+    </section>
+
+    <footer>
+      ColtCircle · Part 3 presentation materials · Print this page to PDF if needed (Ctrl+P → Save as PDF)
+    </footer>
+  </div>
+</body>
+</html>

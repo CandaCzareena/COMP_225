@@ -1,7 +1,11 @@
+import dns from "dns";
 import config from "./config/config.js";
 import app from "./server/express.js";
 import mongoose from "mongoose";
 import User from "./server/models/user.model.js";
+
+// Some Windows DNS resolvers refuse MongoDB SRV lookups (querySrv ECONNREFUSED).
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
 mongoose.Promise = global.Promise;
 const mongoOptions = {
